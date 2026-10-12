@@ -1,0 +1,37 @@
+services:
+  broker:
+    image: eclipse-mosquitto:2
+    container_name: p3-broker
+    volumes:
+      - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./certs:/mosquitto/certs:ro
+    ports:
+      - "1883:1883"   # không mã hóa, chỉ để demo Wireshark
+      - "8883:8883"   # TLS + mTLS
+    networks: [iotnet]
+
+  device-a:           # thiết bị nhận
+    build: ./device
+    command: ["python", "mqtt_client.py", "sub", "device-a"]
+    environment:
+      BROKER_HOST: broker
+      CERT_DIR: /certs
+    volumes:
+      - ./certs:/certs:ro
+    depends_on: [broker]
+    networks: [iotnet]
+
+  device-b:           # thiết bị gửi
+    build: ./device
+    command: ["python", "mqtt_client.py", "pub", "device-b"]
+    environment:
+      BROKER_HOST: broker
+      CERT_DIR: /certs
+    volumes:
+      - ./certs:/certs:ro
+    depends_on: [broker, device-a]
+    networks: [iotnet]
+
+networks:
+  iotnet:
+    driver: bridge
