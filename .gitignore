@@ -1,0 +1,5 @@
+certs/*
+!certs/.gitkeep
+__pycache__/
+.venv/
+*.pcap
