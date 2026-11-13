@@ -3,3 +3,19 @@ certs/*
 __pycache__/
 .venv/
 *.pcap
+*.pyc
+ca/data/
+ca/pki/*.key
+certs/*.key
+__pycache__/
+.pytest_cache/
+.env
+
+# Project3 CA
+.env
+ca/data/
+ca/pki/*.key
+certs/*.key
+device/enrolled-test/
+__pycache__/
+.pytest_cache/
