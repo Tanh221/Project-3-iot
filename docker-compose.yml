@@ -36,13 +36,19 @@ services:
     command: ["python", "mqtt_client.py", "sub", "device-a"]
     environment:
       BROKER_HOST: broker
-      CERT_DIR: /certs
       DEVICE_ID: device-a
       ENROLL_TOKEN: ${DEVICE_A_TOKEN:-}
       CA_URL: http://ca:8000
+      CA_CERT_PATH: /pinned/ca.crt
+      DATA_DIR: /data
     volumes:
-      - ./certs:/certs:ro
-    depends_on: [broker]
+      - ./certs/ca.crt:/pinned/ca.crt:ro   # chỉ root cert công khai
+      - device-a-data:/data                # khóa + cert riêng của thiết bị
+    depends_on:
+      broker:
+        condition: service_started
+      ca:
+        condition: service_healthy
     networks: [iotnet]
 
   device-b:           # thiết bị gửi
@@ -50,14 +56,26 @@ services:
     command: ["python", "mqtt_client.py", "pub", "device-b"]
     environment:
       BROKER_HOST: broker
-      CERT_DIR: /certs
       DEVICE_ID: device-b
       ENROLL_TOKEN: ${DEVICE_B_TOKEN:-}
       CA_URL: http://ca:8000
+      CA_CERT_PATH: /pinned/ca.crt
+      DATA_DIR: /data
     volumes:
-      - ./certs:/certs:ro
-    depends_on: [broker, device-a]
+      - ./certs/ca.crt:/pinned/ca.crt:ro
+      - device-b-data:/data
+    depends_on:
+      broker:
+        condition: service_started
+      ca:
+        condition: service_healthy
+      device-a:
+        condition: service_started
     networks: [iotnet]
+
+volumes:
+  device-a-data:
+  device-b-data:
 
 networks:
   iotnet:

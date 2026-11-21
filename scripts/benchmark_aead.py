@@ -5,8 +5,8 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
 import ascon  # Ref: NIST SP 800-232 / ascon PyPI package
 
 # Configuration Parameters
-NUM_ITERATIONS = 5000       # So luong vong lap benchmark
-PAYLOAD_SIZES = [64, 256, 1024, 4096] # Kich thuoc du lieu (Bytes) tương ứng dữ liệu cảm biến IoT
+NUM_ITERATIONS = 5000       
+PAYLOAD_SIZES = [64, 256, 1024, 4096] 
 
 def benchmark_ascon(data: bytes, iterations: int):
     key = os.urandom(16)   # 128-bit key
