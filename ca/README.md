@@ -15,24 +15,24 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 # 1) Chép root CA tuần 1 vào pki/ (EC P-256, PEM, key không mật khẩu)
-cp <root-ca>.crt pki/ca.crt && cp <root-ca>.key pki/ca.key
+cp certs/ca.crt ca/pki/ca.crt && cp certs/ca.key ca/pki/ca.key
 
 # 2) Đăng ký thiết bị -> in ra token
 python provision.py device-a
 
 # 3) Chạy CA
-uvicorn asgi:app --port 8000
+CA_CERT_PATH=../certs/ca.crt CA_KEY_PATH=../certs/ca.key uvicorn asgi:app --port 8001
 
 # 4) Giả lập thiết bị bằng openssl + curl
 openssl ecparam -name prime256v1 -genkey -noout -out device-a.key
 openssl req -new -key device-a.key -subj "/CN=device-a" -out device-a.csr
-python3 - GhAgaLqyVNpbEu4Cfuu4Z5a9iCYd9n11 <<'PY' > req.json
+python3 - 6QNoVBpIjt1ROSeXi31nKWMhwrWnqQ3H <<'PY' > req.json
 import json,sys
 print(json.dumps({"device_id":"device-a","token":sys.argv[1],"csr_pem":open("device-a.csr").read()}))
 PY
 curl -s -X POST localhost:8000/cert/enroll -H 'content-type: application/json' -d @req.json > resp.json
 python3 -c "import json;open('device-a.crt','w').write(json.load(open('resp.json'))['certificate_pem'])"
-openssl verify -CAfile pki/ca.crt device-a.crt
+openssl verify -CAfile ca/pki/ca.crt device-a.crt
 ```
 
 ## Test
